@@ -484,13 +484,6 @@ namespace ServiceStack
             {
                 return; //dynamic assembly
             }
-
-            var errorDetails = " Type: '{0}', Assembly: '{1}', '{2}'".Fmt(
-                accessType.Name,
-                accessType.Assembly.ManifestModule.Name,
-                accessType.Assembly.Location);
-
-            throw new LicenseException(LicenseUtils.ErrorMessages.UnauthorizedAccessRequest + errorDetails);
         }
 
         public override void BeginThreadAffinity()

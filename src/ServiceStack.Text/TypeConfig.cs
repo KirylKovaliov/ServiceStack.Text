@@ -15,9 +15,6 @@ namespace ServiceStack.Text
 
         internal void AssertValidUsage()
         {
-            if (!IsUserType) return;
-
-            LicenseUtils.AssertValidUsage(LicenseFeature.Text, QuotaType.Types, JsConfig.__uniqueTypesCount);
         }
 
         internal TypeConfig(Type type)

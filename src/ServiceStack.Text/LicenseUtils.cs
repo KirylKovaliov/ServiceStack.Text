@@ -119,15 +119,15 @@ namespace ServiceStack
 
         public static class ErrorMessages
         {
-            private const string UpgradeInstructions = " Please see https://servicestack.net to upgrade to a commercial license or visit https://github.com/ServiceStackV3/ServiceStackV3 to revert back to the free ServiceStack v3.";
-            internal const string ExceededTextTypes = "The free-quota limit on '{0} ServiceStack.Text Types' has been reached." + UpgradeInstructions;
-            internal const string ExceededRedisTypes = "The free-quota limit on '{0} Redis Types' has been reached." + UpgradeInstructions;
-            internal const string ExceededRedisRequests = "The free-quota limit on '{0} Redis requests per hour' has been reached." + UpgradeInstructions;
-            internal const string ExceededOrmLiteTables = "The free-quota limit on '{0} OrmLite Tables' has been reached." + UpgradeInstructions;
-            internal const string ExceededServiceStackOperations = "The free-quota limit on '{0} ServiceStack Operations' has been reached." + UpgradeInstructions;
-            internal const string ExceededAdminUi = "The Admin UI is a commerical-only premium feature." + UpgradeInstructions;
-            internal const string ExceededPremiumFeature = "Unauthorized use of a commerical-only premium feature." + UpgradeInstructions;
-            public const string UnauthorizedAccessRequest = "Unauthorized access request of a licensed feature.";
+            //private const string UpgradeInstructions = " Please see https://servicestack.net to upgrade to a commercial license or visit https://github.com/ServiceStackV3/ServiceStackV3 to revert back to the free ServiceStack v3.";
+            //internal const string ExceededTextTypes = "The free-quota limit on '{0} ServiceStack.Text Types' has been reached." + UpgradeInstructions;
+            //internal const string ExceededRedisTypes = "The free-quota limit on '{0} Redis Types' has been reached." + UpgradeInstructions;
+            //internal const string ExceededRedisRequests = "The free-quota limit on '{0} Redis requests per hour' has been reached." + UpgradeInstructions;
+            //internal const string ExceededOrmLiteTables = "The free-quota limit on '{0} OrmLite Tables' has been reached." + UpgradeInstructions;
+            //internal const string ExceededServiceStackOperations = "The free-quota limit on '{0} ServiceStack Operations' has been reached." + UpgradeInstructions;
+            //internal const string ExceededAdminUi = "The Admin UI is a commerical-only premium feature." + UpgradeInstructions;
+            //internal const string ExceededPremiumFeature = "Unauthorized use of a commerical-only premium feature." + UpgradeInstructions;
+            //public const string UnauthorizedAccessRequest = "Unauthorized access request of a licensed feature.";
         }
 
         public static class FreeQuotas
@@ -196,94 +196,13 @@ namespace ServiceStack
         public static void ApprovedUsage(LicenseFeature licenseFeature, LicenseFeature requestedFeature,
             int allowedUsage, int actualUsage, string message)
         {
-            var hasFeature = (requestedFeature & licenseFeature) == requestedFeature;
-            if (hasFeature)
-                return;
-
-            if (actualUsage > allowedUsage)
-                throw new LicenseException(message.Fmt(allowedUsage));
+           
         }
 
         public static bool HasLicensedFeature(LicenseFeature feature)
         {
             var licensedFeatures = ActivatedLicenseFeatures();
             return (feature & licensedFeatures) == feature;
-        }
-
-        public static void AssertValidUsage(LicenseFeature feature, QuotaType quotaType, int count)
-        {
-            var licensedFeatures = ActivatedLicenseFeatures();
-            if ((LicenseFeature.All & licensedFeatures) == LicenseFeature.All) //Standard Usage
-                return;
-
-            if (AccessTokenScope != null)
-            {
-                if ((feature & AccessTokenScope.tempFeatures) == feature)
-                    return;
-            }
-
-            //Free Quotas
-            switch (feature)
-            {
-                case LicenseFeature.Text:
-                    switch (quotaType)
-                    {
-                        case QuotaType.Types:
-                            ApprovedUsage(licensedFeatures, feature, FreeQuotas.TextTypes, count, ErrorMessages.ExceededTextTypes);
-                            return;
-                    }
-                    break;
-
-                case LicenseFeature.Redis:
-                    switch (quotaType)
-                    {
-                        case QuotaType.Types:
-                            ApprovedUsage(licensedFeatures, feature, FreeQuotas.RedisTypes, count, ErrorMessages.ExceededRedisTypes);
-                            return;
-                        case QuotaType.RequestsPerHour:
-                            ApprovedUsage(licensedFeatures, feature, FreeQuotas.RedisRequestPerHour, count, ErrorMessages.ExceededRedisRequests);
-                            return;
-                    }
-                    break;
-
-                case LicenseFeature.OrmLite:
-                    switch (quotaType)
-                    {
-                        case QuotaType.Tables:
-                            ApprovedUsage(licensedFeatures, feature, FreeQuotas.OrmLiteTables, count, ErrorMessages.ExceededOrmLiteTables);
-                            return;
-                    }
-                    break;
-
-                case LicenseFeature.ServiceStack:
-                    switch (quotaType)
-                    {
-                        case QuotaType.Operations:
-                            ApprovedUsage(licensedFeatures, feature, FreeQuotas.ServiceStackOperations, count, ErrorMessages.ExceededServiceStackOperations);
-                            return;
-                    }
-                    break;
-
-                case LicenseFeature.Admin:
-                    switch (quotaType)
-                    {
-                        case QuotaType.PremiumFeature:
-                            ApprovedUsage(licensedFeatures, feature, FreeQuotas.PremiumFeature, count, ErrorMessages.ExceededAdminUi);
-                            return;
-                    }
-                    break;
-
-                case LicenseFeature.Premium:
-                    switch (quotaType)
-                    {
-                        case QuotaType.PremiumFeature:
-                            ApprovedUsage(licensedFeatures, feature, FreeQuotas.PremiumFeature, count, ErrorMessages.ExceededPremiumFeature);
-                            return;
-                    }
-                    break;
-            }
-
-            throw new LicenseException("Unknown Quota Usage: {0}, {1}".Fmt(feature, quotaType));
         }
 
         public static LicenseFeature GetLicensedFeatures(this LicenseKey key)
@@ -384,9 +303,6 @@ namespace ServiceStack
         {
             var accessType = accessToken.GetType();
 
-            if (srcFeature != LicenseFeature.Client || requestedAccess != LicenseFeature.Text || accessToken == null)
-                throw new LicenseException(ErrorMessages.UnauthorizedAccessRequest);
-
             if (accessType.Name == "AccessToken" && accessType.GetAssembly().ManifestModule.Name.StartsWith("<")) //Smart Assembly
                 return new AccessToken(requestedAccess);
 
@@ -395,8 +311,6 @@ namespace ServiceStack
                 var errorDetails = " __token: '{0}', Assembly: '{1}'".Fmt(
                     accessType.Name,
                     accessType.GetAssembly().ManifestModule.Name);
-
-                throw new LicenseException(ErrorMessages.UnauthorizedAccessRequest + errorDetails);
             }
 
             PclExport.Instance.VerifyInAssembly(accessType, _approved.__dlls);
